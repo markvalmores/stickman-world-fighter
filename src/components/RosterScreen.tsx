@@ -117,10 +117,10 @@ export function RosterScreen({ onSelect }: Props) {
   }
 
   return (
-    <div className="flex flex-col items-center w-full min-h-screen bg-neutral-950 text-white p-8 font-sans">
+    <div className="flex flex-col items-center w-full min-h-screen bg-neutral-950 text-white p-8 font-sans overflow-y-auto">
       <h2 className="text-4xl font-black mb-8 uppercase tracking-widest text-neutral-200">Select Fighter</h2>
       
-      <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-10 gap-4 max-w-6xl w-full">
+      <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-10 gap-4 max-w-6xl w-full pb-12">
         {ROSTER.map((char) => (
           <button
             key={char.id}

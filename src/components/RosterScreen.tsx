@@ -55,6 +55,21 @@ export function RosterScreen({ onSelect }: Props) {
           </div>
 
           <div className="flex-1 flex flex-col gap-6 w-full">
+            <div className="flex gap-4 mb-4 md:mb-0">
+              <button 
+                onClick={() => setCustomizingChar(null)}
+                className="flex-1 py-4 bg-neutral-800 hover:bg-neutral-700 text-white font-bold rounded-xl transition-colors border border-neutral-600"
+              >
+                BACK
+              </button>
+              <button 
+                onClick={() => onSelect(customizingChar)}
+                className="flex-1 py-4 bg-white hover:bg-gray-200 text-black font-bold rounded-xl transition-colors shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+              >
+                CONFIRM
+              </button>
+            </div>
+
             <div className="flex flex-col gap-2">
               <label className="text-neutral-400 uppercase tracking-wider text-sm font-bold">Color</label>
               <div className="flex items-center gap-4">
@@ -94,21 +109,6 @@ export function RosterScreen({ onSelect }: Props) {
                 <div className="text-neutral-500 uppercase text-xs mb-1 font-bold">Jump</div>
                 <div className="font-black text-green-400 text-xl">{customizingChar.stats.jump}</div>
               </div>
-            </div>
-
-            <div className="flex gap-4 mt-6">
-              <button 
-                onClick={() => setCustomizingChar(null)}
-                className="flex-1 py-4 bg-neutral-800 hover:bg-neutral-700 text-white font-bold rounded-xl transition-colors border border-neutral-600"
-              >
-                BACK
-              </button>
-              <button 
-                onClick={() => onSelect(customizingChar)}
-                className="flex-1 py-4 bg-white hover:bg-gray-200 text-black font-bold rounded-xl transition-colors shadow-[0_0_20px_rgba(255,255,255,0.2)]"
-              >
-                CONFIRM
-              </button>
             </div>
           </div>
         </div>

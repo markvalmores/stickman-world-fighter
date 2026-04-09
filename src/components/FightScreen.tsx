@@ -122,18 +122,30 @@ export function FightScreen({ playerChar, opponentChar, stage, difficulty, setti
 
     const checkGamepad = () => {
       const gamepads = navigator.getGamepads();
-      if (gamepads[0]) {
-        const gp = gamepads[0];
-        // D-pad or left stick
-        keysRef.current.left = gp.buttons[14]?.pressed || gp.axes[0] < -0.5;
-        keysRef.current.right = gp.buttons[15]?.pressed || gp.axes[0] > 0.5;
-        // A button (bottom face)
+      const gp = gamepads[0];
+      if (!gp) return;
+
+      const isSwitch = gp.id.toLowerCase().includes('nintendo') || gp.id.toLowerCase().includes('switch');
+
+      // D-pad or left stick
+      keysRef.current.left = gp.buttons[14]?.pressed || gp.axes[0] < -0.5;
+      keysRef.current.right = gp.buttons[15]?.pressed || gp.axes[0] > 0.5;
+      
+      if (isSwitch) {
+        // Switch Mapping
+        // Jump: B button (Button 0)
         keysRef.current.jump = gp.buttons[0]?.pressed;
-        // X button (left face)
-        keysRef.current.attack = gp.buttons[2]?.pressed || gp.buttons[3]?.pressed;
-        // RB or RT for Ultimate
+        // Attack: Y button (Button 2)
+        keysRef.current.attack = gp.buttons[2]?.pressed;
+        // Ultimate: R or ZR (Button 5 or 7)
         keysRef.current.ultimate = gp.buttons[5]?.pressed || gp.buttons[7]?.pressed;
-        // Y button (top face) for Fever
+        // Fever: X button (Button 3)
+        keysRef.current.fever = gp.buttons[3]?.pressed;
+      } else {
+        // Default (Xbox-style) Mapping
+        keysRef.current.jump = gp.buttons[0]?.pressed;
+        keysRef.current.attack = gp.buttons[2]?.pressed || gp.buttons[3]?.pressed;
+        keysRef.current.ultimate = gp.buttons[5]?.pressed || gp.buttons[7]?.pressed;
         keysRef.current.fever = gp.buttons[3]?.pressed;
       }
     };

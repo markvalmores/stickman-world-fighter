@@ -94,6 +94,14 @@ export function FightScreen({ playerChar, opponentChar, stage, difficulty, setti
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
+    // Robust background loading
+    const bgImage = new Image();
+    bgImage.src = stage.bgImageUrl;
+    bgImage.onerror = () => {
+      console.warn("Failed to load background image, using fallback.");
+      bgImage.src = ''; // Clear source to prevent further errors
+    };
+
     const player = new Fighter(100, canvas.height - 150, playerChar, true);
     const opponent = new Fighter(canvas.width - 200, canvas.height - 150, opponentChar, false);
     

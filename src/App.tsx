@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ErrorInfo, ReactNode } from 'react';
 import { GameState, Character, StageData, Difficulty, AppSettings } from './types';
 import { TitleScreen } from './components/TitleScreen';
 import { RosterScreen } from './components/RosterScreen';
@@ -11,6 +11,19 @@ import { GlobeScreen } from './components/GlobeScreen';
 import { FightScreen } from './components/FightScreen';
 import { ROSTER } from './game/characters';
 import { sound } from './game/audio';
+
+class ErrorBoundary extends React.Component<{children: ReactNode}, {hasError: boolean}> {
+  constructor(props: {children: ReactNode}) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError(error: any) { return { hasError: true }; }
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) { console.error(error, errorInfo); }
+  render() {
+    if (this.state.hasError) return <div className="w-full h-screen bg-black text-white flex items-center justify-center">Game Error - Please try refreshing.</div>;
+    return this.props.children;
+  }
+}
 
 const DEFAULT_SETTINGS: AppSettings = {
   volume: 0.5,
@@ -60,28 +73,30 @@ export default function App() {
   };
 
   return (
-    <div className="w-full h-screen bg-black overflow-hidden">
-      {gameState === 'TITLE' && (
-        <TitleScreen 
-          onStart={handleStart} 
-          difficulty={difficulty} 
-          setDifficulty={setDifficulty} 
-          settings={settings}
-          setSettings={setSettings}
-        />
-      )}
-      {gameState === 'ROSTER' && <RosterScreen onSelect={handleCharacterSelect} />}
-      {gameState === 'GLOBE' && <GlobeScreen onStageSelected={handleStageSelect} />}
-      {gameState === 'FIGHT' && playerChar && opponentChar && stage && (
-        <FightScreen 
-          playerChar={playerChar} 
-          opponentChar={opponentChar} 
-          stage={stage} 
-          difficulty={difficulty}
-          settings={settings}
-          onBack={handleBackToTitle} 
-        />
-      )}
-    </div>
+    <ErrorBoundary>
+      <div className="w-full h-screen bg-black overflow-hidden">
+        {gameState === 'TITLE' && (
+          <TitleScreen 
+            onStart={handleStart} 
+            difficulty={difficulty} 
+            setDifficulty={setDifficulty} 
+            settings={settings}
+            setSettings={setSettings}
+          />
+        )}
+        {gameState === 'ROSTER' && <RosterScreen onSelect={handleCharacterSelect} />}
+        {gameState === 'GLOBE' && <GlobeScreen onStageSelected={handleStageSelect} />}
+        {gameState === 'FIGHT' && playerChar && opponentChar && stage && (
+          <FightScreen 
+            playerChar={playerChar} 
+            opponentChar={opponentChar} 
+            stage={stage} 
+            difficulty={difficulty}
+            settings={settings}
+            onBack={handleBackToTitle} 
+          />
+        )}
+      </div>
+    </ErrorBoundary>
   );
 }

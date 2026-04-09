@@ -445,13 +445,13 @@ export function FightScreen({ playerChar, opponentChar, stage, difficulty, setti
   }
 
   return (
-    <div className="fixed inset-0 w-full h-full bg-black flex flex-col items-center justify-center touch-none overflow-hidden">
+    <div className="min-h-screen w-full bg-black flex flex-col items-center touch-none overflow-y-auto">
       <div className="absolute top-2 md:top-4 text-white text-sm md:text-xl font-bold tracking-widest z-10 drop-shadow-md flex flex-col items-center">
         <span>{stage.name} - {stage.theme}</span>
         <span className="text-[10px] md:text-xs text-gray-400 mt-1 font-mono">Playing on: {deviceInfo}</span>
       </div>
 
-      <div className="relative w-full h-full overflow-hidden flex items-center justify-center bg-black">
+      <div className="relative w-full h-screen overflow-hidden flex items-center justify-center bg-black">
         <canvas
           ref={canvasRef}
           className="w-full h-full block"

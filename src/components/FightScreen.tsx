@@ -402,8 +402,18 @@ export function FightScreen({ playerChar, opponentChar, stage, difficulty, setti
         statusX += 50;
       }
       if (player.specialMeter >= 100) {
-        ctx.fillStyle = '#0ff';
+        ctx.save();
+        ctx.font = 'bold 16px sans-serif';
+        // Aura
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#ff4400';
+        ctx.fillStyle = '#ff0';
         ctx.fillText('ULTIMATE READY (Press K / RB)', statusX, 95);
+        ctx.fillStyle = '#f80';
+        ctx.fillText('ULTIMATE READY (Press K / RB)', statusX, 94);
+        ctx.fillStyle = '#f00';
+        ctx.fillText('ULTIMATE READY (Press K / RB)', statusX, 93);
+        ctx.restore();
         statusX += 220;
       }
       

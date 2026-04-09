@@ -48,6 +48,21 @@ export function TitleScreen({ onStart, difficulty, setDifficulty, settings, setS
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/80" />
       </div>
 
+      <div className="absolute top-4 right-4 z-20">
+        <button 
+          onClick={() => {
+            if (!document.fullscreenElement) {
+              document.documentElement.requestFullscreen().catch(err => console.error(err));
+            } else {
+              document.exitFullscreen();
+            }
+          }}
+          className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white font-bold rounded-lg transition-colors text-sm"
+        >
+          FULLSCREEN
+        </button>
+      </div>
+
       <div className="relative z-10 text-center space-y-8 animate-in fade-in zoom-in duration-700">
         <h1 className="text-6xl md:text-8xl font-black tracking-tighter uppercase italic fire-title mb-8">
           Stickman<br />World Fighters

@@ -87,8 +87,15 @@ export function FightScreen({ playerChar, opponentChar, stage, difficulty, setti
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const player = new Fighter(100, 400, playerChar, true);
-    const opponent = new Fighter(600, 400, opponentChar, false);
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const player = new Fighter(100, canvas.height - 150, playerChar, true);
+    const opponent = new Fighter(canvas.width - 200, canvas.height - 150, opponentChar, false);
     
     let animationFrameId: number;
 
@@ -162,8 +169,8 @@ export function FightScreen({ playerChar, opponentChar, stage, difficulty, setti
 
           // Update
           if (player.health > 0 && opponent.health > 0) {
-            player.update(keysRef.current, stage.platforms, false, opponent, difficulty, isFever);
-            opponent.update({ left: false, right: false, jump: false, attack: false, ultimate: false, fever: false }, stage.platforms, true, player, difficulty, false);
+            player.update(keysRef.current, stage.platforms, false, opponent, difficulty, isFever, canvas.width, canvas.height);
+            opponent.update({ left: false, right: false, jump: false, attack: false, ultimate: false, fever: false }, stage.platforms, true, player, difficulty, false, canvas.width, canvas.height);
           } else {
             const win = player.health > 0;
             const timeSeconds = Math.floor(gameTimeRef.current / 1000);
@@ -201,13 +208,17 @@ export function FightScreen({ playerChar, opponentChar, stage, difficulty, setti
 
         // Procedural background elements based on theme
         ctx.save();
+        const bgScaleX = canvas.width / 800;
+        const bgScaleY = canvas.height / 600;
+        ctx.scale(bgScaleX, bgScaleY);
+        
         if (stage.theme === 'cyberpunk') {
           // Draw grid
           ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
           ctx.lineWidth = 2;
           ctx.beginPath();
-          for (let i = 0; i < canvas.width; i += 40) { ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); }
-          for (let i = 0; i < canvas.height; i += 40) { ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); }
+          for (let i = 0; i < 800; i += 40) { ctx.moveTo(i, 0); ctx.lineTo(i, 600); }
+          for (let i = 0; i < 600; i += 40) { ctx.moveTo(0, i); ctx.lineTo(800, i); }
           ctx.stroke();
           // Distant buildings
           ctx.fillStyle = '#0a0a1a';
@@ -218,8 +229,8 @@ export function FightScreen({ playerChar, opponentChar, stage, difficulty, setti
         } else if (stage.theme === 'jungle') {
           // Vines and trees
           ctx.fillStyle = '#0a3a1a';
-          ctx.fillRect(50, 0, 40, canvas.height);
-          ctx.fillRect(700, 0, 60, canvas.height);
+          ctx.fillRect(50, 0, 40, 600);
+          ctx.fillRect(700, 0, 60, 600);
           ctx.beginPath();
           ctx.arc(400, 600, 300, Math.PI, 0);
           ctx.fill();
@@ -232,7 +243,7 @@ export function FightScreen({ playerChar, opponentChar, stage, difficulty, setti
           ctx.fill();
           ctx.fillStyle = '#ff4400';
           ctx.globalAlpha = 0.5 + Math.sin(Date.now() / 200) * 0.2;
-          ctx.fillRect(0, 500, canvas.width, 100);
+          ctx.fillRect(0, 500, 800, 100);
           ctx.globalAlpha = 1.0;
         } else if (stage.theme === 'ice') {
           // Glaciers
@@ -247,8 +258,8 @@ export function FightScreen({ playerChar, opponentChar, stage, difficulty, setti
           // Stars
           ctx.fillStyle = '#ffffff';
           for(let i=0; i<100; i++) {
-            const x = Math.sin(i * 123) * canvas.width;
-            const y = Math.cos(i * 321) * canvas.height;
+            const x = Math.sin(i * 123) * 800;
+            const y = Math.cos(i * 321) * 600;
             ctx.globalAlpha = 0.5 + Math.sin(Date.now()/500 + i) * 0.5;
             ctx.fillRect(Math.abs(x), Math.abs(y), 2, 2);
           }
@@ -261,37 +272,47 @@ export function FightScreen({ playerChar, opponentChar, stage, difficulty, setti
       }
 
       // Floor
+      const floorY = canvas.height - 50;
       ctx.fillStyle = '#111';
-      ctx.fillRect(0, 550, canvas.width, 50);
+      ctx.fillRect(0, floorY, canvas.width, 50);
       ctx.strokeStyle = '#333';
       ctx.lineWidth = 4;
-      ctx.strokeRect(0, 550, canvas.width, 50);
+      ctx.strokeRect(0, floorY, canvas.width, 50);
 
       // Platforms (3D effect)
+      // Scale platforms based on screen width relative to 800
+      const scaleX = canvas.width / 800;
+      const scaleY = canvas.height / 600;
+      
       stage.platforms.forEach(p => {
+        const px = p.x * scaleX;
+        const py = p.y * scaleY;
+        const pw = p.w * scaleX;
+        const ph = p.h; // keep height constant
+        
         // Platform shadow/depth
         ctx.fillStyle = '#111';
-        ctx.fillRect(p.x + 5, p.y + 5, p.w, p.h);
+        ctx.fillRect(px + 5, py + 5, pw, ph);
         
         // Platform top
-        const platGrad = ctx.createLinearGradient(p.x, p.y, p.x, p.y + p.h);
+        const platGrad = ctx.createLinearGradient(px, py, px, py + ph);
         platGrad.addColorStop(0, '#555');
         platGrad.addColorStop(1, '#222');
         ctx.fillStyle = platGrad;
-        ctx.fillRect(p.x, p.y, p.w, p.h);
+        ctx.fillRect(px, py, pw, ph);
         
         // Platform highlight
         ctx.fillStyle = 'rgba(255,255,255,0.1)';
-        ctx.fillRect(p.x, p.y, p.w, 3);
+        ctx.fillRect(px, py, pw, 3);
         
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 2;
-        ctx.strokeRect(p.x, p.y, p.w, p.h);
+        ctx.strokeRect(px, py, pw, ph);
       });
 
       // Fighters
-      if (player.health > 0) player.draw(ctx);
-      if (opponent.health > 0) opponent.draw(ctx);
+      if (player.health > 0) player.draw(ctx, canvas.width);
+      if (opponent.health > 0) opponent.draw(ctx, canvas.width);
 
       // Names
       ctx.fillStyle = '#fff';
@@ -299,13 +320,16 @@ export function FightScreen({ playerChar, opponentChar, stage, difficulty, setti
       ctx.textAlign = 'left';
       ctx.fillText(playerChar.name, 20, 30);
       ctx.textAlign = 'right';
-      ctx.fillText(opponentChar.name, 780, 30);
+      ctx.fillText(opponentChar.name, canvas.width - 20, 30);
       ctx.textAlign = 'left';
 
       // Health Bars Background (3D effect)
+      const barWidth = Math.min(300, canvas.width / 2 - 40);
+      const rightBarX = canvas.width - 20 - barWidth;
+      
       ctx.fillStyle = '#330000'; // Dark red background
-      ctx.fillRect(20, 40, 300, 20);
-      ctx.fillRect(480, 40, 300, 20);
+      ctx.fillRect(20, 40, barWidth, 20);
+      ctx.fillRect(rightBarX, 40, barWidth, 20);
       
       // Player Health Gradient
       const pHealthGrad = ctx.createLinearGradient(20, 40, 20, 60);
@@ -313,31 +337,34 @@ export function FightScreen({ playerChar, opponentChar, stage, difficulty, setti
       pHealthGrad.addColorStop(0.5, '#00cc00');
       pHealthGrad.addColorStop(1, '#006600');
       ctx.fillStyle = pHealthGrad;
-      ctx.fillRect(20, 40, Math.max(0, player.health) * 3, 20);
+      ctx.fillRect(20, 40, Math.max(0, player.health) * (barWidth / 100), 20);
 
       // Opponent Health Gradient
-      const oHealthGrad = ctx.createLinearGradient(480, 40, 480, 60);
+      const oHealthGrad = ctx.createLinearGradient(rightBarX, 40, rightBarX, 60);
       oHealthGrad.addColorStop(0, '#ff5555');
       oHealthGrad.addColorStop(0.5, '#cc0000');
       oHealthGrad.addColorStop(1, '#660000');
       ctx.fillStyle = oHealthGrad;
-      ctx.fillRect(480 + (100 - Math.max(0, opponent.health)) * 3, 40, Math.max(0, opponent.health) * 3, 20);
+      ctx.fillRect(rightBarX + (100 - Math.max(0, opponent.health)) * (barWidth / 100), 40, Math.max(0, opponent.health) * (barWidth / 100), 20);
 
       // Health Bar Highlights (3D shine)
       ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-      ctx.fillRect(20, 40, Math.max(0, player.health) * 3, 6);
-      ctx.fillRect(480 + (100 - Math.max(0, opponent.health)) * 3, 40, Math.max(0, opponent.health) * 3, 6);
+      ctx.fillRect(20, 40, Math.max(0, player.health) * (barWidth / 100), 6);
+      ctx.fillRect(rightBarX + (100 - Math.max(0, opponent.health)) * (barWidth / 100), 40, Math.max(0, opponent.health) * (barWidth / 100), 6);
 
       // Health Bar Borders
       ctx.strokeStyle = '#000';
       ctx.lineWidth = 2;
-      ctx.strokeRect(20, 40, 300, 20);
-      ctx.strokeRect(480, 40, 300, 20);
+      ctx.strokeRect(20, 40, barWidth, 20);
+      ctx.strokeRect(rightBarX, 40, barWidth, 20);
 
       // Special Meters Background
+      const specBarWidth = Math.min(200, canvas.width / 2 - 60);
+      const rightSpecBarX = canvas.width - 20 - specBarWidth;
+      
       ctx.fillStyle = '#111';
-      ctx.fillRect(20, 65, 200, 10);
-      ctx.fillRect(580, 65, 200, 10);
+      ctx.fillRect(20, 65, specBarWidth, 10);
+      ctx.fillRect(rightSpecBarX, 65, specBarWidth, 10);
 
       // Player Special Gradient
       const pSpecGrad = ctx.createLinearGradient(20, 65, 20, 75);
@@ -345,26 +372,26 @@ export function FightScreen({ playerChar, opponentChar, stage, difficulty, setti
       pSpecGrad.addColorStop(0.5, player.specialMeter >= 100 ? '#00ffff' : '#008888');
       pSpecGrad.addColorStop(1, player.specialMeter >= 100 ? '#008888' : '#004444');
       ctx.fillStyle = pSpecGrad;
-      ctx.fillRect(20, 65, player.specialMeter * 2, 10);
+      ctx.fillRect(20, 65, player.specialMeter * (specBarWidth / 100), 10);
       
       // Opponent Special Gradient
-      const oSpecGrad = ctx.createLinearGradient(580, 65, 580, 75);
+      const oSpecGrad = ctx.createLinearGradient(rightSpecBarX, 65, rightSpecBarX, 75);
       oSpecGrad.addColorStop(0, opponent.specialMeter >= 100 ? '#ffffff' : '#00ffff');
       oSpecGrad.addColorStop(0.5, opponent.specialMeter >= 100 ? '#00ffff' : '#008888');
       oSpecGrad.addColorStop(1, opponent.specialMeter >= 100 ? '#008888' : '#004444');
       ctx.fillStyle = oSpecGrad;
-      ctx.fillRect(580 + (100 - opponent.specialMeter) * 2, 65, opponent.specialMeter * 2, 10);
+      ctx.fillRect(rightSpecBarX + (100 - opponent.specialMeter) * (specBarWidth / 100), 65, opponent.specialMeter * (specBarWidth / 100), 10);
 
       // Special Bar Highlights
       ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-      ctx.fillRect(20, 65, player.specialMeter * 2, 3);
-      ctx.fillRect(580 + (100 - opponent.specialMeter) * 2, 65, opponent.specialMeter * 2, 3);
+      ctx.fillRect(20, 65, player.specialMeter * (specBarWidth / 100), 3);
+      ctx.fillRect(rightSpecBarX + (100 - opponent.specialMeter) * (specBarWidth / 100), 65, opponent.specialMeter * (specBarWidth / 100), 3);
 
       // Special Bar Borders
       ctx.strokeStyle = '#000';
       ctx.lineWidth = 1;
-      ctx.strokeRect(20, 65, 200, 10);
-      ctx.strokeRect(580, 65, 200, 10);
+      ctx.strokeRect(20, 65, specBarWidth, 10);
+      ctx.strokeRect(rightSpecBarX, 65, specBarWidth, 10);
 
       // Status Text
       ctx.font = 'bold 14px sans-serif';
@@ -400,6 +427,7 @@ export function FightScreen({ playerChar, opponentChar, stage, difficulty, setti
     animationFrameId = requestAnimationFrame(loop);
 
     return () => {
+      window.removeEventListener('resize', resizeCanvas);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       cancelAnimationFrame(animationFrameId);
@@ -423,12 +451,10 @@ export function FightScreen({ playerChar, opponentChar, stage, difficulty, setti
         <span className="text-[10px] md:text-xs text-gray-400 mt-1 font-mono">Playing on: {deviceInfo}</span>
       </div>
 
-      <div className="relative w-full h-full max-w-[1000px] max-h-[750px] md:aspect-[4/3] md:border-4 md:border-neutral-800 md:rounded-xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] flex items-center justify-center">
+      <div className="relative w-full h-full overflow-hidden flex items-center justify-center bg-black">
         <canvas
           ref={canvasRef}
-          width={800}
-          height={600}
-          className="w-full h-full object-contain bg-black"
+          className="w-full h-full block"
         />
 
         {gameOver && scoreData && (

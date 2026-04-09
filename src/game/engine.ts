@@ -52,7 +52,7 @@ export class Fighter {
     this.facingRight = facingRight;
   }
 
-  update(keys: GameKeys, platforms: Platform[], isAI: boolean, opponent?: Fighter, difficulty: Difficulty = 'NORMAL', isFever: boolean = false) {
+  update(keys: GameKeys, platforms: Platform[], isAI: boolean, opponent?: Fighter, difficulty: Difficulty = 'NORMAL', isFever: boolean = false, canvasWidth: number = 800, canvasHeight: number = 600) {
     if (this.health <= 0) return;
 
     if (isFever && !isAI) {
@@ -235,8 +235,9 @@ export class Fighter {
     this.y += this.vy;
 
     // Floor collision
-    if (this.y + this.height > 550) {
-      this.y = 550 - this.height;
+    const floorY = canvasHeight - 50;
+    if (this.y + this.height > floorY) {
+      this.y = floorY - this.height;
       this.vy = 0;
       this.isGrounded = true;
     } else {
@@ -260,12 +261,12 @@ export class Fighter {
 
     // Screen bounds
     if (this.x < 0) this.x = 0;
-    if (this.x + this.width > 800) this.x = 800 - this.width;
+    if (this.x + this.width > canvasWidth) this.x = canvasWidth - this.width;
 
     // Combat Collision
     if (this.isUltimate && opponent && opponent.hitCooldown === 0) {
       // Massive beam hitbox
-      const attackRange = 800;
+      const attackRange = canvasWidth;
       const attackX = this.facingRight ? this.x + this.width : this.x - attackRange;
       
       if (
@@ -310,7 +311,7 @@ export class Fighter {
     }
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
+  draw(ctx: CanvasRenderingContext2D, canvasWidth: number = 800) {
     ctx.save();
     
     // Center of the fighter
@@ -455,11 +456,11 @@ export class Fighter {
       ctx.globalAlpha = Math.min(1, this.ultimateTimer / 10);
       
       // Beam core
-      ctx.fillRect(20, -40, 800, 80);
+      ctx.fillRect(20, -40, canvasWidth, 80);
       
       // Beam inner highlight
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(20, -20, 800, 40);
+      ctx.fillRect(20, -20, canvasWidth, 40);
       
       ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;

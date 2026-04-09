@@ -1,10 +1,22 @@
 import { GoogleGenAI } from '@google/genai';
 import { StageData } from '../types';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let aiClient: GoogleGenAI | null = null;
+
+function getAIClient() {
+  if (!aiClient) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is not set");
+    }
+    aiClient = new GoogleGenAI({ apiKey });
+  }
+  return aiClient;
+}
 
 export async function generateStage(lat: number, lng: number): Promise<StageData> {
   try {
+    const ai = getAIClient();
     const prompt = `You are a game level designer for a 2D fighting game. 
 Based on the geographic coordinates latitude ${lat}, longitude ${lng}, generate a 2D fighting game stage.
 Think about what this location is on Earth (e.g., ocean, desert, city, mountains, ice, forest) and theme it accordingly.

@@ -38,10 +38,10 @@ export function RosterScreen({ onSelect }: Props) {
 
   if (customizingChar) {
     return (
-      <div className="flex flex-col items-center justify-center w-full min-h-screen bg-neutral-950 text-white p-8 font-sans">
-        <h2 className="text-4xl font-black mb-8 uppercase tracking-widest text-neutral-200">Customize Fighter</h2>
+      <div className="flex flex-col items-center w-full min-h-screen bg-neutral-950 text-white p-8 font-sans overflow-y-auto">
+        <h2 className="text-4xl font-black mb-8 uppercase tracking-widest text-neutral-200 mt-8">Customize Fighter</h2>
         
-        <div className="flex flex-col md:flex-row gap-8 items-center bg-neutral-900 p-8 rounded-2xl border-2 border-neutral-800 w-full max-w-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+        <div className="flex flex-col md:flex-row gap-8 items-center bg-neutral-900 p-8 rounded-2xl border-2 border-neutral-800 w-full max-w-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] mb-12">
           <div className="flex flex-col items-center gap-4">
             <canvas 
               ref={canvasRef} 

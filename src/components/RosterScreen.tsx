@@ -118,7 +118,21 @@ export function RosterScreen({ onSelect }: Props) {
 
   return (
     <div className="flex flex-col items-center w-full min-h-screen bg-neutral-950 text-white p-8 font-sans overflow-y-auto">
-      <h2 className="text-4xl font-black mb-8 uppercase tracking-widest text-neutral-200">Select Fighter</h2>
+      <div className="flex justify-between w-full max-w-6xl mb-8">
+        <h2 className="text-4xl font-black uppercase tracking-widest text-neutral-200">Select Fighter</h2>
+        <button 
+          onClick={() => {
+            if (!document.fullscreenElement) {
+              document.documentElement.requestFullscreen().catch(err => console.error(err));
+            } else {
+              document.exitFullscreen();
+            }
+          }}
+          className="px-6 py-2 bg-neutral-800 hover:bg-neutral-700 text-white font-bold rounded-lg transition-colors"
+        >
+          FULLSCREEN
+        </button>
+      </div>
       
       <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-10 gap-4 max-w-6xl w-full pb-12">
         {ROSTER.map((char) => (

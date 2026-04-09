@@ -1,105 +1,50 @@
-import { GoogleGenAI } from '@google/genai';
 import { StageData } from '../types';
 
-let aiClient: GoogleGenAI | null = null;
-
-function getAIClient() {
-  if (!aiClient) {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error("GEMINI_API_KEY is not set");
-    }
-    aiClient = new GoogleGenAI({ apiKey });
-  }
-  return aiClient;
+// Simple seeded random number generator
+function seededRandom(seed: number) {
+  const x = Math.sin(seed++) * 10000;
+  return x - Math.floor(x);
 }
 
 export async function generateStage(lat: number, lng: number): Promise<StageData> {
-  try {
-    const ai = getAIClient();
-    const prompt = `You are a game level designer for a 2D fighting game. 
-Based on the geographic coordinates latitude ${lat}, longitude ${lng}, generate a 2D fighting game stage.
-Think about what this location is on Earth (e.g., ocean, desert, city, mountains, ice, forest) and theme it accordingly.
+  // We use lat/lng to seed the stage generation so the same location always gives the same stage
+  const seed = Math.abs(lat * 1000 + lng);
+  
+  const themes = [
+    { name: "Neon Alley", top: "#0f0c29", bottom: "#302b63", type: "cyberpunk" },
+    { name: "Ancient Ruins", top: "#11998e", bottom: "#38ef7d", type: "jungle" },
+    { name: "Volcanic Crater", top: "#cb2d3e", bottom: "#ef473a", type: "volcano" },
+    { name: "Glacial Peaks", top: "#83a4d4", bottom: "#b6fbff", type: "ice" },
+    { name: "Desert Mirage", top: "#ffb347", bottom: "#ffcc33", type: "desert" },
+    { name: "Abyssal Depths", top: "#000000", bottom: "#0f2027", type: "ocean" },
+    { name: "Celestial Void", top: "#1a2a6c", bottom: "#b21f1f", type: "space" },
+    { name: "Toxic Wasteland", top: "#56ab2f", bottom: "#a8e063", type: "toxic" }
+  ];
 
-Return ONLY valid JSON matching this exact schema, with no markdown formatting or extra text:
-{
-  "name": "Stage Name (e.g. Neo Tokyo, Sahara Ruins, Pacific Abyss)",
-  "theme": "A highly detailed visual description of the landscape (e.g. 'cyberpunk neon city streets at night with rain', 'ancient overgrown temple ruins in a lush jungle'). This will be used as an image generation prompt.",
-  "bgTop": "#hexcolor",
-  "bgBottom": "#hexcolor",
-  "platforms": [
-    { "x": number, "y": number, "w": number, "h": number }
-  ]
-}
+  const themeIndex = Math.floor(seededRandom(seed) * themes.length);
+  const theme = themes[themeIndex];
 
-Rules for platforms:
-- The canvas is 800 wide by 600 high.
-- There is already a main floor at y=550. Do not create a platform there.
-- Create 3 to 6 floating platforms.
-- x should be between 50 and 650.
-- y should be between 200 and 450.
-- w (width) should be between 80 and 250.
-- h (height) should be 20.`;
-
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.1-pro-preview',
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-      }
+  // Generate platforms
+  const platforms = [];
+  const numPlatforms = 3 + Math.floor(seededRandom(seed + 1) * 4); // 3 to 6
+  
+  for (let i = 0; i < numPlatforms; i++) {
+    platforms.push({
+      x: 50 + seededRandom(seed + 2 + i) * 500,
+      y: 200 + seededRandom(seed + 10 + i) * 250,
+      w: 80 + seededRandom(seed + 20 + i) * 150,
+      h: 20
     });
-
-    const text = response.text;
-    if (!text) throw new Error("No response from AI");
-    
-    const data = JSON.parse(text) as StageData;
-    
-    // Generate a unique background image URL using Pollinations AI based on the detailed theme
-    const imagePrompt = `${data.theme}, 2d fighting game stage background, landscape, empty, no characters, masterpiece, highly detailed`;
-    data.bgImageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(imagePrompt)}?width=800&height=600&nologo=true`;
-    
-    return data;
-  } catch (error) {
-    // Suppress the scary console error for 429s and provide a variety of offline fallbacks
-    const fallbacks: StageData[] = [
-      {
-        name: "Neon Alley",
-        theme: "Cyberpunk city streets in the rain",
-        bgTop: "#0f0c29",
-        bgBottom: "#302b63",
-        bgImageUrl: "https://image.pollinations.ai/prompt/cyberpunk%20neon%20city%20street%20alley%20rain%202d%20fighting%20game%20stage%20background?width=800&height=600&nologo=true",
-        platforms: [
-          { x: 100, y: 350, w: 200, h: 20 },
-          { x: 500, y: 350, w: 200, h: 20 },
-          { x: 300, y: 200, w: 200, h: 20 }
-        ]
-      },
-      {
-        name: "Ancient Ruins",
-        theme: "Overgrown temple in a dense jungle",
-        bgTop: "#11998e",
-        bgBottom: "#38ef7d",
-        bgImageUrl: "https://image.pollinations.ai/prompt/ancient%20overgrown%20temple%20ruins%20jungle%202d%20fighting%20game%20stage%20background?width=800&height=600&nologo=true",
-        platforms: [
-          { x: 150, y: 400, w: 150, h: 20 },
-          { x: 500, y: 400, w: 150, h: 20 },
-          { x: 325, y: 250, w: 150, h: 20 }
-        ]
-      },
-      {
-        name: "Volcanic Crater",
-        theme: "Lava flows and dark obsidian rocks",
-        bgTop: "#cb2d3e",
-        bgBottom: "#ef473a",
-        bgImageUrl: "https://image.pollinations.ai/prompt/volcanic%20crater%20lava%20flows%20dark%20obsidian%202d%20fighting%20game%20stage%20background?width=800&height=600&nologo=true",
-        platforms: [
-          { x: 50, y: 300, w: 150, h: 20 },
-          { x: 600, y: 300, w: 150, h: 20 },
-          { x: 325, y: 400, w: 150, h: 20 }
-        ]
-      }
-    ];
-    
-    return fallbacks[Math.floor(Math.random() * fallbacks.length)];
   }
+
+  // Simulate a small loading time for effect
+  await new Promise(resolve => setTimeout(resolve, 500));
+
+  return {
+    name: theme.name,
+    theme: theme.type,
+    bgTop: theme.top,
+    bgBottom: theme.bottom,
+    platforms: platforms
+  };
 }

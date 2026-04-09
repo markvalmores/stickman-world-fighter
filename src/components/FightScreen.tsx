@@ -192,28 +192,100 @@ export function FightScreen({ playerChar, opponentChar, stage, difficulty, setti
         // Fever Mode crazy background
         ctx.fillStyle = `rgba(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255}, 0.5)`;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-      } else if (bgImage) {
-        ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
-        // Dark overlay so characters pop
-        ctx.fillStyle = 'rgba(0,0,0,0.4)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
       } else {
         const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
         gradient.addColorStop(0, stage.bgTop);
         gradient.addColorStop(1, stage.bgBottom);
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Procedural background elements based on theme
+        ctx.save();
+        if (stage.theme === 'cyberpunk') {
+          // Draw grid
+          ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          for (let i = 0; i < canvas.width; i += 40) { ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); }
+          for (let i = 0; i < canvas.height; i += 40) { ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); }
+          ctx.stroke();
+          // Distant buildings
+          ctx.fillStyle = '#0a0a1a';
+          ctx.fillRect(100, 300, 80, 300);
+          ctx.fillRect(250, 200, 120, 400);
+          ctx.fillRect(500, 250, 90, 350);
+          ctx.fillRect(650, 150, 100, 450);
+        } else if (stage.theme === 'jungle') {
+          // Vines and trees
+          ctx.fillStyle = '#0a3a1a';
+          ctx.fillRect(50, 0, 40, canvas.height);
+          ctx.fillRect(700, 0, 60, canvas.height);
+          ctx.beginPath();
+          ctx.arc(400, 600, 300, Math.PI, 0);
+          ctx.fill();
+        } else if (stage.theme === 'volcano') {
+          // Distant mountains and lava
+          ctx.fillStyle = '#2a0a0a';
+          ctx.beginPath();
+          ctx.moveTo(0, 600); ctx.lineTo(200, 300); ctx.lineTo(400, 600);
+          ctx.moveTo(300, 600); ctx.lineTo(600, 200); ctx.lineTo(800, 600);
+          ctx.fill();
+          ctx.fillStyle = '#ff4400';
+          ctx.globalAlpha = 0.5 + Math.sin(Date.now() / 200) * 0.2;
+          ctx.fillRect(0, 500, canvas.width, 100);
+          ctx.globalAlpha = 1.0;
+        } else if (stage.theme === 'ice') {
+          // Glaciers
+          ctx.fillStyle = '#ffffff';
+          ctx.globalAlpha = 0.3;
+          ctx.beginPath();
+          ctx.moveTo(0, 600); ctx.lineTo(150, 250); ctx.lineTo(300, 600);
+          ctx.moveTo(500, 600); ctx.lineTo(700, 150); ctx.lineTo(800, 600);
+          ctx.fill();
+          ctx.globalAlpha = 1.0;
+        } else if (stage.theme === 'space') {
+          // Stars
+          ctx.fillStyle = '#ffffff';
+          for(let i=0; i<100; i++) {
+            const x = Math.sin(i * 123) * canvas.width;
+            const y = Math.cos(i * 321) * canvas.height;
+            ctx.globalAlpha = 0.5 + Math.sin(Date.now()/500 + i) * 0.5;
+            ctx.fillRect(Math.abs(x), Math.abs(y), 2, 2);
+          }
+          ctx.globalAlpha = 1.0;
+          // Planet
+          ctx.fillStyle = '#444488';
+          ctx.beginPath(); ctx.arc(600, 150, 80, 0, Math.PI*2); ctx.fill();
+        }
+        ctx.restore();
       }
 
       // Floor
       ctx.fillStyle = '#111';
       ctx.fillRect(0, 550, canvas.width, 50);
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(0, 550, canvas.width, 50);
 
-      // Platforms
-      ctx.fillStyle = '#333';
+      // Platforms (3D effect)
       stage.platforms.forEach(p => {
+        // Platform shadow/depth
+        ctx.fillStyle = '#111';
+        ctx.fillRect(p.x + 5, p.y + 5, p.w, p.h);
+        
+        // Platform top
+        const platGrad = ctx.createLinearGradient(p.x, p.y, p.x, p.y + p.h);
+        platGrad.addColorStop(0, '#555');
+        platGrad.addColorStop(1, '#222');
+        ctx.fillStyle = platGrad;
         ctx.fillRect(p.x, p.y, p.w, p.h);
-        ctx.strokeStyle = '#555';
+        
+        // Platform highlight
+        ctx.fillStyle = 'rgba(255,255,255,0.1)';
+        ctx.fillRect(p.x, p.y, p.w, 3);
+        
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
         ctx.strokeRect(p.x, p.y, p.w, p.h);
       });
 

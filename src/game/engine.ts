@@ -420,11 +420,15 @@ export class Fighter {
     addLimb(0, 10, leftLegAngle, 20, kneeBend, 20);
     addLimb(0, 10, rightLegAngle, 20, kneeBend, 20);
 
-    // 1. Drop shadow / 3D depth
+    // 1. Drop shadow / 3D depth with parallax
+    // Shadow offset changes based on character's facing direction and slight movement
+    const shadowOffsetX = this.facingRight ? -6 : 6;
+    const shadowOffsetY = 6 + (this.vy * 0.2); // Shadow moves slightly when jumping
+    
     ctx.lineWidth = 10;
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
     ctx.save();
-    ctx.translate(4, 4);
+    ctx.translate(shadowOffsetX, shadowOffsetY);
     ctx.stroke(path);
     ctx.restore();
 

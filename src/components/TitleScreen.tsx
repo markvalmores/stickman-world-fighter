@@ -34,9 +34,9 @@ export function TitleScreen({ onStart, difficulty, setDifficulty, settings, setS
   }, [listeningKey, settings, setSettings]);
 
   return (
-    <div className="relative flex flex-col items-center justify-center w-full h-screen bg-neutral-950 text-white font-sans overflow-hidden">
+    <div className="relative flex flex-col items-center justify-center w-full min-h-screen bg-neutral-950 text-white font-sans overflow-y-auto">
       {/* 3D Video Background */}
-      <div className="absolute inset-0 z-0">
+      <div className="fixed inset-0 z-0">
         <video 
           autoPlay 
           loop 

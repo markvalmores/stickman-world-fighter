@@ -1,4 +1,5 @@
 import { StageData } from '../types';
+import { getStageBackground } from '../services/imageService';
 
 // Simple seeded random number generator
 function seededRandom(seed: number) {
@@ -37,14 +38,14 @@ export async function generateStage(lat: number, lng: number): Promise<StageData
     });
   }
 
-  // Simulate a small loading time for effect
-  await new Promise(resolve => setTimeout(resolve, 500));
+  const bgImageUrl = await getStageBackground(theme.name);
 
   return {
     name: theme.name,
     theme: theme.type,
     bgTop: theme.top,
     bgBottom: theme.bottom,
+    bgImageUrl,
     platforms: platforms
   };
 }

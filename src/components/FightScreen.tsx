@@ -212,11 +212,15 @@ export function FightScreen({ playerChar, opponentChar, stage, difficulty, setti
         ctx.fillStyle = `rgba(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255}, 0.5)`;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       } else {
-        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, stage.bgTop);
-        gradient.addColorStop(1, stage.bgBottom);
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (bgImage) {
+          ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+        } else {
+          const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+          gradient.addColorStop(0, stage.bgTop);
+          gradient.addColorStop(1, stage.bgBottom);
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
 
         // Procedural background elements based on theme
         ctx.save();

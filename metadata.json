@@ -1,0 +1,5 @@
+{
+  "name": "Stickman World Fighters",
+  "description": "A modern 2D stickman fighting game with a 20-character roster, AI-generated stages via a 3D globe, and cross-platform controls.",
+  "requestFramePermissions": []
+}
